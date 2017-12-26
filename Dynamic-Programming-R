@@ -1,0 +1,106 @@
+datamth3 <- data.frame()
+count1 <- 0
+count2 <- 0
+for (invmth2 in 0:4){
+  optimalcost3 <- "na"
+for (prodmth3 in 0:5){
+    invmth3 <- invmth2 + prodmth3 - 3
+    costmth3 <- 0
+    count1 <- count1 + 1
+
+if (invmth3 >= 0 && invmth3 <= 4){
+if (prodmth3 == 0){
+        costmth3 <- invmth3*1
+        count2 <- count2 + 1
+      } else {
+        costmth3 <- 13 + prodmth3*2 + invmth3*1
+        count2 <- count2 + 1
+      }
+if (optimalcost3 == "na") {
+        optimalcost3 <- costmth3
+        optimalprod3 <- prodmth3
+      } else if (optimalcost3 > costmth3){
+        optimalcost3 <- costmth3
+        optimalprod3 <- prodmth3
+      }
+
+
+
+    } 
+
+  }
+  datamth3 <- rbind(datamth3, c(invmth2, optimalprod3, optimalcost3))
+names(datamth3) <- c("EndInv2", "OptimalProd3", "OptimalCost3" )
+}
+
+datamth2 <- data.frame()
+for (invmth1 in 0:4){
+  optimalcost2 <- "na"
+for (prodmth2 in 0:5){
+    invmth2 <- invmth1 + prodmth2 - 3
+    costmth2 <- 0
+    count1 <- count1 + 1
+
+if (invmth2 >= 0 && invmth2 <= 4){
+if (prodmth2 == 0){
+        costmth2 <- invmth2*1 + datamth3[invmth2+1,3]
+        count2 <- count2 + 1
+      } else {
+        costmth2 <- 13 + prodmth2*2 + invmth2*1 + datamth3[invmth2+1,3]
+        count2 <- count2 + 1
+      }
+if (optimalcost2 == "na") {
+        optimalcost2 <- costmth2
+        optimalprod2 <- prodmth2
+      } else if (optimalcost2 > costmth2){
+        optimalcost2 <- costmth2
+        optimalprod2 <- prodmth2
+      }
+
+
+
+    } 
+
+  }
+  datamth2 <- rbind(datamth2, c(invmth1, optimalprod2, invmth1+optimalprod2-3, datamth3[invmth1+optimalprod2-3+1,2], optimalcost2))
+names(datamth2) <- c("EndInv1", "OptimalProd2", "EndInv2", "OptimalProd3", "OptimalCost2")
+}
+
+datamth1 <- data.frame()
+for (startinv in 0:4){
+  optimalcost1 <- "na"
+for (prodmth1 in 0:5){
+    invmth1 <- startinv + prodmth1 - 3
+    costmth1 <- 0
+    count1 <- count1 + 1
+
+if (invmth1 >= 0 && invmth1 <= 4){
+if (prodmth1 == 0){
+        costmth1 <- invmth1*1 + datamth2[invmth1+1,5]
+        count2 <- count2 + 1
+      } else {
+        costmth1 <- 13 + prodmth1*2 + invmth1*1 + datamth2[invmth1+1,5]
+        count2 <- count2 + 1
+      }
+if (optimalcost1 == "na") {
+        optimalcost1 <- costmth1
+        optimalprod1 <- prodmth1
+      } else if (optimalcost1 > costmth1){
+        optimalcost1 <- costmth1
+        optimalprod1 <- prodmth1
+      }
+
+
+
+    } 
+
+  }
+  datamth1 <- rbind(datamth1, c(startinv, optimalprod1, startinv+optimalprod1-3, datamth2[startinv+optimalprod1-3+1,2], (startinv+optimalprod1-3)+(datamth2[startinv+optimalprod1-3+1,2])-3, datamth2[(startinv+optimalprod1-3)+(datamth2[startinv+optimalprod1-3+1,2])-3+1,2], optimalcost1))
+  names(datamth1) <- c("StartInv", "OptimalProd1", "EndInv1", "OptimalProd2", "EndInv2", "OptimalProd3", "OptimalCost1")
+}
+
+datamth3
+datamth2
+datamth1
+count1
+count2
