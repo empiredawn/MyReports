@@ -1,0 +1,132 @@
+// ***********************
+// Parametres et ensembles
+// ***********************
+
+// Ensemble de N noeuds 
+intN       = ...;
+rangeV  = 1..N;
+
+// Ensemble de clients 
+rangeI = 2..N;
+
+// Nombre de vehicules
+intM = ...;
+
+// Ensemble de tournees
+rangeK = 1..M;
+
+// Capacite d'un vehicule
+floatU = ...;
+
+// Demande de chaque client
+floatdemande[V] = ...;
+
+// Ensemble d'arcs (cas asymetrique)
+tuplearc        {intv_dep; intv_arr;}
+setof(arc) A     = {<i,j> | i,jinV: i != j};
+
+// Matrice de distance
+floatD[V][V] = ...;
+
+// ***********************
+// Variables de decision
+// ***********************
+
+// x [a][k]= 1 si le vehicule k emprunte l'arc 
+dvarbooleanx[A][K];
+
+// w[a] = 1 si un vehicule emprunte l'arc
+dvarbooleanw[A];
+
+// Variables de flot pour elimination de sous-tours
+dvarfloat+y[A][K];
+
+// *************************************
+// Consequence variables (expressions)
+// *************************************
+
+// Duree de chaque tournee
+dexprfloatduree_tournee[kinK] = sum (<i,j>inA) D[i][j]*x[<i,j>][k];
+
+// ***********************
+// Fonction-objectif
+// ***********************
+
+// Minimiser la longueur du circuit
+minimizesum (kinK)  duree_tournee[k]; 
+
+
+
+// ***********************
+// Contraintes
+// ***********************
+subjectto {
+// On sort du depot M fois 
+sum (<1,j>inA) w[<1,j>] == M;
+
+// On sort de chaque client une et une seule fois
+forall (iinI)
+sum (<j,i>inA) w[<j,i>] == 1;
+
+// On entre dans le depot M fois 
+sum (<j,1>inA) w[<j,1>] == M;
+
+// On entre dans chaque client une et une seule fois
+forall (iinI)
+sum (<i,j>inA) w[<i,j>] == 1;
+
+// Capacite des vehicules    
+forall (kinK)
+sum (ainA) demande[a.v_arr]*x[a][k] <= U;
+
+// Lien entre les variables            
+forall (ainA)
+sum (kinK) x[a][k] == w[a];
+
+// Conservation de flots : si on entre avec vehicule, on sort avec le meme 
+forall (iinV, kinK)
+sum(<j,i>inA) x[<j,i>][k] == sum(<i,j>inA) x[<i,j>][k];
+
+// Elimination de sous-tous avec variables de flots 
+	forall (kinK, vinV) 
+	if (v != 1)
+	sum (ainA: a.v_arr == v) y[a][k]-sum (ainA: a.v_dep == v) y[a][k] == sum(ainA: a.v_arr == v) x[a][k];
+	else
+	sum (ainA: a.v_arr == v) y[a][k]-sum (ainA: a.v_dep == v) y[a][k] == -(sum(ainA) x[a][k] -1);
+	
+	forall (ainA, kinK)
+	y[a][k] <= N*x[a][k];
+	
+ };
+
+// Affichage de la solution optimale 
+setof(int) succ[iinV][kinK] = {j | <i,j>inA : x[<i,j>][k] == 1};
+execute{
+for (varkinK)
+for (varainA) 
+if (x[a][k] == 1)
+writeln ("les client ", a.v_dep," et ", a.v_arr , " se suivent dans la tournée.");     
+
+writeln ();
+for (varkinK)
+{
+writeln ();    
+writeln ();
+writeln ();
+writeln ("***La tournée optimale du camion ", k, " a une durée de ", duree_tournee[k], " et visite dans l'ordre :");
+
+if (succ[1].size>0)
+     { 
+write("1");
+for (varv = 1; Opl.first(succ[v][k]) != 1 ;)
+      {
+if (succ[v][k].size>0)
+         {
+v = Opl.first(succ[v][k]); 
+write( " -> ", v);
+       }         
+      }
+write( " -> ", Opl.first(succ[v][k]));
+}            
+  }    
+};
